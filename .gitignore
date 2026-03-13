@@ -1,0 +1,8 @@
+# Executable files
+.exe
+
+# Dirs
+.venv
+
+# Docs
+*.docx
