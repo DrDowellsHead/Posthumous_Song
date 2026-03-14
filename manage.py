@@ -6,7 +6,9 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'PosthumousSong.settings')
+    """ In this line below, by changing the value after 'settings',
+    it is determined which settings file will be used when the application starts. """
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'PosthumousSong.settings.dev')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

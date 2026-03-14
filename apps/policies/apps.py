@@ -2,4 +2,6 @@ from django.apps import AppConfig
 
 
 class PoliciesConfig(AppConfig):
-    name = 'policies'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.policies"
+    label = "policies"
