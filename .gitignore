@@ -3,7 +3,18 @@
 
 # Dirs
 .venv
+media/
 
 # Docs
 *.docx
 *.env
+.env.*
+
+# Database
+*.sqlite3
+*.sql
+*.dump
+
+# Cache
+__pycache__/
+.pytest_cache/
