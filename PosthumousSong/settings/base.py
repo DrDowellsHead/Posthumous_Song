@@ -72,6 +72,10 @@ DATABASES = {
     }
 }
 
+# Test settings for e-mail send
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@posthumoussong.local"
+
 LANGUAGE_CODE = "ru-ru"
 TIME_ZONE = "UTC"
 USE_I18N = True
