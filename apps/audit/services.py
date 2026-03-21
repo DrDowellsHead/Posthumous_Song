@@ -16,5 +16,5 @@ def log_event(*, owner, event_type: str, actor_type: str, object_type: str, obje
 
     """
 
-    return AuditEvent.object_create(owner=owner, event_type=event_type, actor_type=actor_type, object_type=object_type,
+    return AuditEvent.objects.create(owner=owner, event_type=event_type, actor_type=actor_type, object_type=object_type,
                                     object_id=object_id, payload_json=payload_json or {}, )

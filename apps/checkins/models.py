@@ -5,7 +5,7 @@ from django.conf import settings
 class CheckInMethod(models.Model):
     """ List of ways an international user can ensure his activity. """
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-                              related_name="checkins_methods")  # Who owns the check-in method
+                              related_name="checkin_methods")  # Who owns the check-in method
     method_type = models.CharField(max_length=50)  # Method type: password, email_link, telegram, desktop_agent, etc.
     is_enabled = models.BooleanField(default=True)  # Is this method allowed now
     secret_hash = models.TextField(blank=True)  # A hash of the secret or token if the method requires a secret value
@@ -17,7 +17,7 @@ class CheckInMethod(models.Model):
 class CheckInEvent(models.Model):
     """ Log of every successful or unsuccessful check-in """
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-                              related_name="checkins_events")  # Whose check-in was completed
+                              related_name="checkin_events")  # Whose check-in was completed
     method_type = models.CharField(max_length=50)  # Through what method did the attempt take place
     is_successful = models.BooleanField(default=False)  # The success of the attempt
     ip_address = models.GenericIPAddressField(null=True,

@@ -19,7 +19,7 @@ def choose_delivery_channel(contact: Contact) -> str:
     return "email"
 
 
-def resolve_message_content(bundle: MessageBundle, recipient_link: BundleRecipient) -> str[str, str]:
+def resolve_message_content(bundle: MessageBundle, recipient_link: BundleRecipient) -> tuple[str, str]:
     """
     Selects a topic and text.
     If custom_subject/custom_body is set for a specific recipient,
