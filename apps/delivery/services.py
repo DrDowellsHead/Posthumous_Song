@@ -4,7 +4,7 @@ from django.utils import timezone
 
 from apps.audit.services import log_event
 from apps.contacts.models import Contact
-from apps.delivery.models import DeliveryJob
+from apps.delivery.models import DeliveryJob, ReleaseRun
 from apps.messages.models import BundleRecipient, MessageAttachment, MessageBundle
 from apps.checkins.models import DeadManSwitchState
 
@@ -178,7 +178,7 @@ def finalize_release_if_completed(user) -> bool:
 
     has_pending_of_failed = DeliveryJob.objects.filter(
         owner=user,
-        status_in=["pending", "failed"],
+        status__in=["pending", "failed"],
     ).exists()
 
     has_sent = DeliveryJob.objects.filter(
@@ -191,7 +191,7 @@ def finalize_release_if_completed(user) -> bool:
 
     state = DeadManSwitchState.objects.get(owner=user)
     state.current_status = "released"
-    state.save(updated_fields=["current_status", "updated_at"])
+    state.save(update_fields=["current_status", "updated_at"])
 
     log_event(
         owner=user,
@@ -203,3 +203,21 @@ def finalize_release_if_completed(user) -> bool:
     )
 
     return True
+
+
+@transaction.atomic
+def start_release_run_for_user(user):
+    open_run = ReleaseRun.objects.filter(
+        owner=user,
+        status=ReleaseRun.STATUS_PENDING,
+    ).order_by("-started_at").first()
+
+    if open_run:
+        return open_run, False
+
+    run = ReleaseRun.objects.create(
+        owner=user,
+        status=ReleaseRun.STATUS_PENDING,
+    )
+
+    return run, True

@@ -17,17 +17,26 @@ class CheckInResult:
 
 def get_or_create_release_policy(user) -> RealisePolicy:
     """
-
     Returns the user's policy.
     If it doesn’t exist yet, it creates a default one.
     """
 
-    policy, _ = RealisePolicy.object.get_or_create(owner=user, defaults={"inactivity_days": 30, "grace_days": 7,
+    policy, _ = RealisePolicy.objects.get_or_create(owner=user, defaults={"inactivity_days": 30, "grace_days": 7,
                                                                          "auto_release_enabled": True,
                                                                          "require_guardians_confirmation": False,
                                                                          "reminder_schedule_json": {}, }, )
 
     return policy
+
+
+def get_or_create_switch_state(user):
+    state, _ = DeadManSwitchState.objects.get_or_create(
+        owner=user,
+        defaults={
+            "currents_status": "active",
+        },
+    )
+    return state
 
 
 @transaction.atomic
@@ -110,7 +119,7 @@ def process_deadline_tick() -> int:
     for state in states:
         user = state.owner
 
-        if user.emergancy_pause_until and user.emergancy_pause_until > now:
+        if user.emergency_pause_until and user.emergency_pause_until > now:
             continue
 
         if state.current_status == "released":
