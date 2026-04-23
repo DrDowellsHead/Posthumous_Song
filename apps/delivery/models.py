@@ -68,6 +68,8 @@ class DeliveryJob(models.Model):
     """ Delivery unit: one contact, one channel, one specific message bundle. """
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                               related_name="delivery_jobs")  # Whose task is delivery
+    run = models.ForeignKey("delivery.ReleaseRun", on_delete=models.CASCADE, related_name="jobs", null=True,
+                            blank=True)  # This is the communication object itself
     bundle = models.ForeignKey("posthumous_messages.MessageBundle", on_delete=models.CASCADE,
                                related_name="delivery_jobs")  # What set of messages is sent
     contact = models.ForeignKey("contacts.Contact", on_delete=models.CASCADE,
