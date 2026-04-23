@@ -76,6 +76,9 @@ DATABASES = {
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "noreply@posthumoussong.local"
 
+LOGIN_URL = "/admin/login/"
+LOGIN_REDIRECT_URL = "/"
+
 LANGUAGE_CODE = "ru-ru"
 TIME_ZONE = "UTC"
 USE_I18N = True

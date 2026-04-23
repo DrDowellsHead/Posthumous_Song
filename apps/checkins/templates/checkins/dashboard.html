@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>PosthumousSong — Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 32px;
+            background: black;
+            color: wheat;
+        }
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: black;
+            border: 1px solid #ddd;
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+        }
+        .messages {
+            margin-bottom: 18px;
+        }
+        .messages li {
+            margin-bottom: 8px;
+        }
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        button {
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            background: #1f5eff;
+            color: white;
+            font-size: 14px;
+        }
+        button.secondary {
+            background: #555;
+        }
+        ul {
+            padding-left: 18px;
+        }
+        .muted {
+            color: #666;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #eef3ff;
+            color: #1f5eff;
+            font-weight: bold;
+        }
+        .stats {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .stats div {
+            background: blue;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div>
+            <h1>PosthumousSong</h1>
+            <div class="muted">
+                Пользователь:
+                <strong>{{ user.display_name|default:user.username }}</strong>
+            </div>
+        </div>
+        <div>
+            <a href="/admin/">admin</a>
+        </div>
+    </div>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li><strong>{{ message.tags }}</strong>: {{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="grid">
+        <section class="card">
+            <h2>Состояние</h2>
+            <p>
+                Статус:
+                <span class="status">{{ state.current_status }}</span>
+            </p>
+
+            <p>
+                Последний check-in:
+                {% if state.last_checkin_at %}
+                    {{ state.last_checkin_at|date:"d.m.Y H:i" }}
+                {% else %}
+                    —
+                {% endif %}
+            </p>
+
+            <p>
+                Следующий дедлайн:
+                {% if state.next_deadline_at %}
+                    {{ state.next_deadline_at|date:"d.m.Y H:i" }}
+                {% else %}
+                    —
+                {% endif %}
+            </p>
+
+            <p>
+                Grace deadline:
+                {% if state.grace_deadline_at %}
+                    {{ state.grace_deadline_at|date:"d.m.Y H:i" }}
+                {% else %}
+                    —
+                {% endif %}
+            </p>
+
+            <div class="actions">
+                <form method="post" action="{% url 'checkins:perform_checkin' %}">
+                    {% csrf_token %}
+                    <button type="submit">Подтвердить активность</button>
+                </form>
+
+                {% if user.is_staff %}
+                    <form method="post" action="{% url 'checkins:process_deadlines' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="secondary">Прогнать дедлайны</button>
+                    </form>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Политика</h2>
+            <p>Inactivity days: <strong>{{ policy.inactivity_days }}</strong></p>
+            <p>Grace days: <strong>{{ policy.grace_days }}</strong></p>
+            <p>Auto release: <strong>{{ policy.auto_release_enabled }}</strong></p>
+            <p>Guardians required: <strong>{{ policy.require_guardians_confirmation }}</strong></p>
+        </section>
+
+        <section class="card">
+            <h2>Jobs</h2>
+            <div class="stats">
+                <div>Pending: <strong>{{ pending_jobs_count }}</strong></div>
+                <div>Failed: <strong>{{ failed_jobs_count }}</strong></div>
+                <div>Sent: <strong>{{ sent_jobs_count }}</strong></div>
+            </div>
+
+            <h3 style="margin-top: 20px;">Последний run</h3>
+            {% if last_run %}
+                <p>ID: <strong>{{ last_run.id }}</strong></p>
+                <p>Status: <strong>{{ last_run.status }}</strong></p>
+                <p>Started: {{ last_run.started_at|date:"d.m.Y H:i" }}</p>
+                <p>
+                    Finished:
+                    {% if last_run.finished_at %}
+                        {{ last_run.finished_at|date:"d.m.Y H:i" }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </p>
+            {% else %}
+                <p class="muted">Run ещё не запускался.</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Контакты</h2>
+            {% if contacts %}
+                <ul>
+                    {% for contact in contacts %}
+                        <li>
+                            {{ contact.full_name }}
+                            {% if contact.email %} — {{ contact.email }}{% endif %}
+                            {% if contact.preferred_channel %} ({{ contact.preferred_channel }}){% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="muted">Контактов пока нет.</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Активные bundles</h2>
+            {% if bundles %}
+                <ul>
+                    {% for bundle in bundles %}
+                        <li>
+                            <strong>{{ bundle.title }}</strong>
+                            {% if bundle.subject %} — {{ bundle.subject }}{% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="muted">Активных bundles пока нет.</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Последние check-in</h2>
+            {% if recent_checkins %}
+                <ul>
+                    {% for event in recent_checkins %}
+                        <li>
+                            {{ event.created_at|date:"d.m.Y H:i" }} — {{ event.method_type }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="muted">Check-in событий пока нет.</p>
+            {% endif %}
+        </section>
+    </div>
+</body>
+</html>
