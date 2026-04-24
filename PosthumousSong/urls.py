@@ -21,5 +21,6 @@ from django.views.generic import RedirectView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('checkins/', include("apps.checkins.urls")),
+    path('contacts/', include("apps.contacts.urls")),
     path("", RedirectView.as_view(pattern_name="checkins:dashboard", permanent=False)),
 ]

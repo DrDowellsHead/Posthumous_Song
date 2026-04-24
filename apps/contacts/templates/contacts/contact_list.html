@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Контакты — PosthumousSong</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 32px;
+            background: black;
+            color: wheat;
+        }
+        a {
+            color: #8ec5ff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: black;
+            border: 1px solid #ddd;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        button, .button-link {
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            background: #1f5eff;
+            color: white;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        button.secondary, .button-link.secondary {
+            background: #555;
+        }
+        .messages {
+            margin-bottom: 18px;
+        }
+        .messages li {
+            margin-bottom: 8px;
+        }
+        .muted {
+            color: #999;
+        }
+        .contact-meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+            gap: 10px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-weight: bold;
+            background: #eef3ff;
+            color: #1f5eff;
+        }
+        .badge.inactive {
+            background: #f3e4e4;
+            color: #9e2b2b;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div>
+            <h1>Контакты</h1>
+            <div class="muted">Адресаты, которым могут быть отправлены сообщения</div>
+        </div>
+        <div class="actions">
+            <a class="button-link secondary" href="{% url 'checkins:dashboard' %}">← Dashboard</a>
+            <a class="button-link" href="{% url 'contacts:create' %}">+ Новый контакт</a>
+        </div>
+    </div>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li><strong>{{ message.tags }}</strong>: {{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if contacts %}
+        {% for contact in contacts %}
+            <section class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap: 16px;">
+                    <div>
+                        <h2 style="margin-bottom: 6px;">{{ contact.full_name }}</h2>
+                        {% if contact.is_active %}
+                            <span class="badge">active</span>
+                        {% else %}
+                            <span class="badge inactive">inactive</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="actions">
+                        <a class="button-link secondary" href="{% url 'contacts:update' contact.pk %}">Редактировать</a>
+
+                        {% if contact.is_active %}
+                            <form method="post" action="{% url 'contacts:deactivate' contact.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="secondary">Деактивировать</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="contact-meta" style="margin-top: 16px;">
+                    <div><strong>Email:</strong> {{ contact.email|default:"—" }}</div>
+                    <div><strong>Telegram:</strong> {{ contact.telegram_chat_id|default:"—" }}</div>
+                    <div><strong>Телефон:</strong> {{ contact.phone|default:"—" }}</div>
+                    <div><strong>Канал:</strong> {{ contact.preferred_channel }}</div>
+                    <div><strong>Связь:</strong> {{ contact.relationship_type|default:"—" }}</div>
+                    <div><strong>Приоритет:</strong> {{ contact.priority_order }}</div>
+                    <div><strong>Подтверждён:</strong> {{ contact.is_verified|yesno:"да,нет" }}</div>
+                    <div><strong>Обновлён:</strong> {{ contact.updated_at|date:"d.m.Y H:i" }}</div>
+                </div>
+
+                {% if contact.notes %}
+                    <div style="margin-top: 14px;">
+                        <strong>Заметки:</strong>
+                        <p style="margin-top: 6px;">{{ contact.notes }}</p>
+                    </div>
+                {% endif %}
+            </section>
+        {% endfor %}
+    {% else %}
+        <section class="card">
+            <h2>Контактов пока нет</h2>
+            <p class="muted">Создай первый контакт, чтобы привязывать к нему message bundles.</p>
+            <a class="button-link" href="{% url 'contacts:create' %}">Создать контакт</a>
+        </section>
+    {% endif %}
+</body>
+</html>

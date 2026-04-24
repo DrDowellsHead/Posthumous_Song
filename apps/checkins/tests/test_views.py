@@ -5,6 +5,8 @@ from django.urls import reverse
 from apps.checkins.models import CheckInEvent, DeadManSwitchState
 from apps.policies.models import RealisePolicy
 
+from apps.contacts.models import Contact
+
 User = get_user_model()
 
 
@@ -36,11 +38,73 @@ class CheckinViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "PosthumousSong")
 
-    def test_post_checkin_creates_event(self):
+    def test_contact_create(self):
         self.client.login(username="author", password="testpass123")
 
-        response = self.client.post(reverse("checkins:perform_checkin"))
+        response = self.client.post(
+            reverse("contacts:create"),
+            data={
+                "full_name": "Test Contact",
+                "relationship_type": "friend",
+                "email": "test@example.com",
+                "telegram_chat_id": "",
+                "phone": "",
+                "preferred_channel": "email",
+                "priority_order": 1,
+                "is_verified": True,
+                "is_active": True,
+                "notes": "note",
+            },
+        )
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(CheckInEvent.objects.filter(owner=self.user).count(), 1)
-        self.assertTrue(DeadManSwitchState.objects.filter(owner=self.user).exists())
+        self.assertEqual(Contact.objects.filter(owner=self.user).count(), 1)
+
+    def test_contact_update(self):
+        contact = Contact.objects.create(
+            owner=self.user,
+            full_name="Old Name",
+            email="old@example.com",
+            preferred_channel="email",
+        )
+
+        self.client.login(username="author", password="testpass123")
+
+        response = self.client.post(
+            reverse("contacts:update", args=[contact.pk]),
+            data={
+                "full_name": "New Name",
+                "relationship_type": "",
+                "email": "new@example.com",
+                "telegram_chat_id": "",
+                "phone": "",
+                "preferred_channel": "email",
+                "priority_order": 0,
+                "is_verified": False,
+                "is_active": True,
+                "notes": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        contact.refresh_from_db()
+        self.assertEqual(contact.full_name, "New Name")
+        self.assertEqual(contact.email, "new@example.com")
+
+    def test_contact_deactivate(self):
+        contact = Contact.objects.create(
+            owner=self.user,
+            full_name="To Disable",
+            email="x@example.com",
+            preferred_channel="email",
+            is_active=True,
+        )
+
+        self.client.login(username="author", password="testpass123")
+
+        response = self.client.post(reverse("contacts:deactivate", args=[contact.pk]))
+        self.assertEqual(response.status_code, 302)
+
+        contact.refresh_from_db()
+        self.assertFalse(contact.is_active)

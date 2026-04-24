@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ page_title }} — PosthumousSong</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 32px;
+            background: black;
+            color: wheat;
+        }
+        a {
+            color: #8ec5ff;
+            text-decoration: none;
+        }
+        .card {
+            max-width: 760px;
+            background: black;
+            border: 1px solid #ddd;
+            border-radius: 14px;
+            padding: 24px;
+        }
+        .field {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #aaa;
+            background: #111;
+            color: wheat;
+        }
+        button {
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            background: #1f5eff;
+            color: white;
+            font-size: 14px;
+        }
+        .actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 18px;
+        }
+        .errors {
+            margin: 0 0 16px 0;
+            color: #ff8b8b;
+        }
+        .help {
+            color: #999;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <p><a href="{% url 'contacts:list' %}">← Назад к контактам</a></p>
+
+    <section class="card">
+        <h1>{{ page_title }}</h1>
+
+        {% if form.errors %}
+            <div class="errors">
+                <strong>Форма содержит ошибки.</strong>
+                {{ form.errors }}
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="help">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="errors">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="actions">
+                <button type="submit">{{ submit_label }}</button>
+                <a href="{% url 'contacts:list' %}">Отмена</a>
+            </div>
+        </form>
+    </section>
+</body>
+</html>
