@@ -193,6 +193,7 @@
         <section class="card">
             <h2>Контакты</h2>
             {% if contacts %}
+                <a href="{% url 'posthumous_messages:list' %}">messages</a>
                 <ul>
                     {% for contact in contacts %}
                         <li>

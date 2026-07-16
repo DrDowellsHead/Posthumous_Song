@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Наборы сообщений — PosthumousSong</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 32px;
+            background: black;
+            color: wheat;
+        }
+        a {
+            color: #8ec5ff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: black;
+            border: 1px solid #ddd;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .button-link {
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            background: #1f5eff;
+            color: white;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button-link.secondary {
+            background: #555;
+        }
+        .messages {
+            margin-bottom: 18px;
+        }
+        .messages li {
+            margin-bottom: 8px;
+        }
+        .muted {
+            color: #999;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-weight: bold;
+            background: #eef3ff;
+            color: #1f5eff;
+        }
+        .badge.inactive {
+            background: #f3e4e4;
+            color: #9e2b2b;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div>
+            <h1>Наборы сообщений</h1>
+            <div class="muted">Контейнеры посланий, которые потом пойдут адресатам</div>
+        </div>
+        <div class="actions">
+            <a class="button-link secondary" href="{% url 'checkins:dashboard' %}">← Dashboard</a>
+            <a class="button-link secondary" href="{% url 'contacts:list' %}">Контакты</a>
+            <a class="button-link" href="{% url 'posthumous_messages:create' %}">+ Новый набор</a>
+        </div>
+    </div>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li><strong>{{ message.tags }}</strong>: {{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if bundles %}
+        {% for bundle in bundles %}
+            <section class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap: 16px;">
+                    <div>
+                        <h2 style="margin-bottom: 6px;">{{ bundle.title }}</h2>
+                        {% if bundle.is_active %}
+                            <span class="badge">active</span>
+                        {% else %}
+                            <span class="badge inactive">inactive</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="actions">
+                        <a class="button-link secondary" href="{% url 'posthumous_messages:update' bundle.pk %}">Редактировать</a>
+                        <a class="button-link" href="{% url 'posthumous_messages:recipients' bundle.pk %}">Получатели</a>
+                    </div>
+                </div>
+
+                <div style="margin-top: 16px;">
+                    <div><strong>Subject:</strong> {{ bundle.subject|default:"—" }}</div>
+                    <div><strong>Обновлён:</strong> {{ bundle.updated_at|date:"d.m.Y H:i" }}</div>
+                </div>
+
+                <div style="margin-top: 14px;">
+                    <strong>Body:</strong>
+                    <p style="margin-top: 6px; white-space: pre-wrap;">{{ bundle.body|truncatechars:400 }}</p>
+                </div>
+            </section>
+        {% endfor %}
+    {% else %}
+        <section class="card">
+            <h2>Наборов сообщений пока нет</h2>
+            <p class="muted">Создай первый bundle, чтобы потом привязать к нему адресатов.</p>
+            <a class="button-link" href="{% url 'posthumous_messages:create' %}">Создать набор</a>
+        </section>
+    {% endif %}
+</body>
+</html>

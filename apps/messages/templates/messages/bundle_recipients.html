@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Получатели — {{ bundle.title }}</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 32px;
+            background: black;
+            color: wheat;
+        }
+        a {
+            color: #8ec5ff;
+            text-decoration: none;
+        }
+        .card {
+            background: black;
+            border: 1px solid #ddd;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 18px;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .button-link, button {
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            background: #1f5eff;
+            color: white;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button-link.secondary, button.secondary {
+            background: #555;
+        }
+        .field {
+            margin-bottom: 14px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #aaa;
+            background: #111;
+            color: wheat;
+        }
+        .messages li {
+            margin-bottom: 8px;
+        }
+        .muted {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <p>
+        <a href="{% url 'posthumous_messages:list' %}">← Назад к наборам сообщений</a>
+    </p>
+
+    <section class="card">
+        <h1>Получатели для «{{ bundle.title }}»</h1>
+        <p class="muted">Здесь определяется, каким контактам отправлять bundle, и можно задать персональный subject/body.</p>
+    </section>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li><strong>{{ message.tags }}</strong>: {{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <section class="card">
+        <h2>Добавить получателя</h2>
+
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div style="color:#ff8b8b;">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit">Добавить</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Текущие получатели</h2>
+
+        {% if recipient_links %}
+            {% for item in recipient_links %}
+                <div style="padding: 14px 0; border-bottom: 1px solid #333;">
+                    <h3 style="margin-bottom: 6px;">{{ item.contact.full_name }}</h3>
+                    <div><strong>Email:</strong> {{ item.contact.email|default:"—" }}</div>
+                    <div><strong>Канал:</strong> {{ item.contact.preferred_channel }}</div>
+                    <div><strong>Enabled:</strong> {{ item.is_enabled|yesno:"да,нет" }}</div>
+                    <div><strong>Custom subject:</strong> {{ item.custom_subject|default:"—" }}</div>
+                    <div><strong>Custom body:</strong></div>
+                    <p style="white-space: pre-wrap;">{{ item.custom_body|default:"—" }}</p>
+
+                    <div class="actions">
+                        <a class="button-link secondary" href="{% url 'posthumous_messages:recipient_update' bundle.pk item.pk %}">Редактировать</a>
+
+                        <form method="post" action="{% url 'posthumous_messages:recipient_delete' bundle.pk item.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="secondary">Удалить</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="muted">Получателей пока нет.</p>
+        {% endif %}
+    </section>
+</body>
+</html>

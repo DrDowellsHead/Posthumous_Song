@@ -22,5 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('checkins/', include("apps.checkins.urls")),
     path('contacts/', include("apps.contacts.urls")),
+    path("messages/", include("apps.messages.urls")),
     path("", RedirectView.as_view(pattern_name="checkins:dashboard", permanent=False)),
 ]
